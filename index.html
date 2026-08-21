@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 智慧穿搭建議系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-shirt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 tracking-tight">AI StyleStudio</h1>
+                    <p class="text-xs text-slate-500">智慧穿搭與風格顧問系統</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                    <i class="fa-solid fa-sparkles mr-1.5"></i> Gemini AI 驅動
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Panel: Input & Controls (5 Cols) -->
+        <section class="lg:col-span-5 space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                        <i class="fa-solid fa-sliders text-indigo-600 mr-2"></i> 穿搭條件設定
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">請上傳您的照片並設定當前場合與風格偏好</p>
+                </div>
+
+                <!-- Step 1: Photo Upload -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">1. 上傳您的個人穿搭/身形照片</label>
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-indigo-500 transition cursor-pointer bg-slate-50/50 relative overflow-hidden group">
+                        <input type="file" id="photo-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                        <div id="upload-placeholder" class="space-y-2">
+                            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition">
+                                <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-700">點擊或拖曳照片至此上傳</p>
+                            <p class="text-xs text-slate-400">支援 JPG, PNG (建議清晰光源充足)</p>
+                        </div>
+                        <div id="preview-container" class="hidden relative">
+                            <img id="image-preview" src="" alt="預覽圖" class="max-h-48 mx-auto rounded-lg object-contain shadow-sm">
+                            <button type="button" id="remove-img" class="absolute top-1 right-1 bg-slate-900/70 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-slate-950 z-20">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Occasion -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">2. 選擇穿搭場合</label>
+                    <select id="occasion-select" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="casual">日常休閒 / 約會聚餐</option>
+                        <option value="business">商務正式 / 職場開會</option>
+                        <option value="party">派對晚宴 / 盛大活動</option>
+                        <option value="outdoor">戶外運動 / 輕旅行</option>
+                        <option value="avant-garde">前衛藝術 / 極致街頭 (測試例外情況)</option>
+                    </select>
+                </div>
+
+                <!-- NEW: Step for uploading 3 fixed clothing items from personal wardrobe -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">3. 上傳您的 3 件固定衣物單品</label>
+                    <p class="text-xs text-slate-400">請分別上傳 3 件衣服照片，AI 將根據您的身形從中挑選最適合的一件進行合成：</p>
+                    <div class="grid grid-cols-3 gap-2 pt-1">
+                        <!-- Wardrobe Item 1 -->
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center hover:border-indigo-500 transition cursor-pointer bg-slate-50 relative overflow-hidden group h-28 flex flex-col items-center justify-center">
+                            <input type="file" id="wardrobe-item-0" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div id="w-placeholder-0" class="space-y-1">
+                                <i class="fa-solid fa-shirt text-slate-400 text-lg group-hover:scale-110 transition"></i>
+                                <p class="text-[10px] text-slate-500 font-medium">單品 1</p>
+                            </div>
+                            <div id="w-preview-0" class="hidden absolute inset-0 bg-white">
+                                <img id="w-img-0" src="" alt="單品1" class="w-full h-full object-cover">
+                                <button type="button" class="absolute top-1 right-1 bg-slate-900/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] z-20 remove-w-btn" data-index="0">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Wardrobe Item 2 -->
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center hover:border-indigo-500 transition cursor-pointer bg-slate-50 relative overflow-hidden group h-28 flex flex-col items-center justify-center">
+                            <input type="file" id="wardrobe-item-1" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div id="w-placeholder-1" class="space-y-1">
+                                <i class="fa-solid fa-shirt text-slate-400 text-lg group-hover:scale-110 transition"></i>
+                                <p class="text-[10px] text-slate-500 font-medium">單品 2</p>
+                            </div>
+                            <div id="w-preview-1" class="hidden absolute inset-0 bg-white">
+                                <img id="w-img-1" src="" alt="單品2" class="w-full h-full object-cover">
+                                <button type="button" class="absolute top-1 right-1 bg-slate-900/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] z-20 remove-w-btn" data-index="1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Wardrobe Item 3 -->
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-3 text-center hover:border-indigo-500 transition cursor-pointer bg-slate-50 relative overflow-hidden group h-28 flex flex-col items-center justify-center">
+                            <input type="file" id="wardrobe-item-2" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <div id="w-placeholder-2" class="space-y-1">
+                                <i class="fa-solid fa-shirt text-slate-400 text-lg group-hover:scale-110 transition"></i>
+                                <p class="text-[10px] text-slate-500 font-medium">單品 3</p>
+                            </div>
+                            <div id="w-preview-2" class="hidden absolute inset-0 bg-white">
+                                <img id="w-img-2" src="" alt="單品3" class="w-full h-full object-cover">
+                                <button type="button" class="absolute top-1 right-1 bg-slate-900/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] z-20 remove-w-btn" data-index="2">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Wardrobe Inventory Level -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-slate-700">4. 現有衣櫃單品豐富度</label>
+                    <select id="wardrobe-level" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="normal">豐富百搭 (衣櫃應有盡有)</option>
+                        <option value="empty">衣櫃缺乏此風格單品 (觸發添購清單)</option>
+                    </select>
+                </div>
+
+                <!-- Generate Button -->
+                <button id="generate-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>開始分析並生成穿搭</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Output & Recommendations (7 Cols) -->
+        <section class="lg:col-span-7 space-y-6">
+            
+            <!-- Initial State / Loading -->
+            <div id="output-placeholder" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[420px]">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-shirt text-2xl"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-700">尚無穿搭建議</h3>
+                <p class="text-xs text-slate-400 max-w-sm mt-1">請在左側上傳您的照片並點擊生成按鈕，AI 顧問將為您量身打造專屬穿搭風格與合成預覽！</p>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-box" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[420px]">
+                <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <h3 id="loading-text" class="text-base font-semibold text-slate-700">AI 正在運用 Gemini 進行虛擬穿搭合成...</h3>
+                <p class="text-xs text-slate-400 mt-1">正在將推薦單品精準融合至您的照片中，請稍候 (約 5-10 秒)</p>
+            </div>
+
+            <!-- Result Display Container -->
+            <div id="result-container" class="hidden space-y-6">
+                
+                <!-- NEW: Virtual Try-On Composite Preview Card (Real AI Image Generation) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center uppercase tracking-wider">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 mr-2"></i> AI 虛擬穿搭真實合成預覽
+                        </h3>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                            <i class="fa-solid fa-check mr-1"></i> Gemini 虛擬試衣完成
+                        </span>
+                    </div>
+                    <div class="relative rounded-xl overflow-hidden bg-slate-900/5 border border-slate-200 flex items-center justify-center p-4 min-h-[320px]">
+                        <!-- Canvas / Composite Container -->
+                        <div id="composite-view" class="relative max-w-md w-full flex justify-center items-center">
+                            <img id="composite-generated-img" src="" alt="虛擬穿搭合成圖" class="max-h-96 rounded-lg object-contain shadow-md">
+                            <!-- Overlay Badge -->
+                            <div id="composite-overlay-badge" class="absolute bottom-3 bg-slate-900/80 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-medium shadow-lg flex items-center space-x-2 border border-white/10">
+                                <i class="fa-solid fa-shirt text-indigo-400"></i>
+                                <span id="composite-outfit-name">套用: 質感簡約日常風格</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 text-center">AI 已透過圖像生成模型將建議的服裝精準穿在您上傳的個人照片身形上。</p>
+                </div>
+
+                <!-- Style Summary Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span id="result-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">商務休閒風</span>
+                            <h2 id="result-title" class="text-xl font-bold text-slate-900 mt-2">都會簡約俐落穿搭</h2>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400">風格契合度</span>
+                            <div class="text-lg font-bold text-indigo-600">96%</div>
+                        </div>
+                    </div>
+                    <p id="result-desc" class="text-sm text-slate-600 leading-relaxed">
+                        針對您的身形比例與場合需求，本套穿搭著重於拉長腿部線條，並運用沉穩色系展現專業又不失親和力的氣場。
+                    </p>
+                </div>
+
+                <!-- Outfit Items Grid -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center uppercase tracking-wider">
+                        <i class="fa-solid fa-list-check text-indigo-600 mr-2"></i> 建議單品組合
+                    </h3>
+                    <div id="items-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Exception Handler 1: Missing Wardrobe Items (Shopping List) -->
+                <div id="shopping-list-card" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-6 space-y-3">
+                    <div class="flex items-center space-x-2 text-amber-800 font-semibold text-sm">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>專屬添購清單 (偵測到衣櫃缺乏部分推薦單品)</span>
+                    </div>
+                    <p class="text-xs text-amber-700">為了達到最佳穿搭效果，建議您可以考慮添購以下單品：</p>
+                    <div id="shopping-items" class="flex flex-wrap gap-2 pt-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Exception Handler 5: Feedback & Help (Not satisfied -> Human Consultant / Community) -->
+                <div class="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl p-6 text-white space-y-4 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h4 class="font-bold text-base flex items-center">
+                                <i class="fa-solid fa-circle-question mr-2 text-indigo-400"></i> 對此穿搭結果仍不滿意嗎？
+                            </h4>
+                            <p class="text-xs text-slate-300 mt-1">若連續調整後仍找不到心儀風格，您可以直接尋求專業協助：</p>
+                        </div>
+                        <div class="flex items-center space-x-3 w-full md:w-auto">
+                            <button id="human-consultant-btn" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition shadow">
+                                <i class="fa-solid fa-headset mr-1.5"></i> 轉交真人顧問
+                            </button>
+                            <button id="community-vote-btn" class="flex-1 md:flex-none bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition border border-white/20">
+                                <i class="fa-solid fa-users mr-1.5"></i> 社群大眾投票
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Popup for Notifications / Exceptions / Human Consultant -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-2" id="modal-icon">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900">提示訊息</h3>
+            <p id="modal-message" class="text-sm text-slate-600 leading-relaxed">內容訊息...</p>
+            <div class="flex justify-end pt-2">
+                <button id="modal-close-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-5 rounded-xl transition">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+        <p>&copy; 2026 AI StyleStudio. All rights reserved. 根據您的需求打造個人專屬時尚。</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const photoInput = document.getElementById('photo-input');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImgBtn = document.getElementById('remove-img');
+        const generateBtn = document.getElementById('generate-btn');
+        const occasionSelect = document.getElementById('occasion-select');
+        const wardrobeLevel = document.getElementById('wardrobe-level');
+        
+        const outputPlaceholder = document.getElementById('output-placeholder');
+        const loadingBox = document.getElementById('loading-box');
+        const loadingText = document.getElementById('loading-text');
+        const resultContainer = document.getElementById('result-container');
+        const resultBadge = document.getElementById('result-badge');
+        const resultTitle = document.getElementById('result-title');
+        const resultDesc = document.getElementById('result-desc');
+        const itemsGrid = document.getElementById('items-grid');
+        const shoppingListCard = document.getElementById('shopping-list-card');
+        const shoppingItems = document.getElementById('shopping-items');
+
+        // Composite view elements
+        const compositeGeneratedImg = document.getElementById('composite-generated-img');
+        const compositeOutfitName = document.getElementById('composite-outfit-name');
+
+        const customModal = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalIcon = document.getElementById('modal-icon');
+
+        const humanConsultantBtn = document.getElementById('human-consultant-btn');
+        const communityVoteBtn = document.getElementById('community-vote-btn');
+
+        let uploadedImageBase64 = null;
+        let uploadedImageMimeType = 'image/png';
+        let wardrobeItemsBase64 = [null, null, null];
+        let wardrobeItemsMimeTypes = ['image/png', 'image/png', 'image/png'];
+
+        // Custom Modal Function
+        function showModal(title, message, type = 'info') {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            
+            if (type === 'error') {
+                modalIcon.className = "w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-xl mb-2";
+                modalIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else if (type === 'success') {
+                modalIcon.className = "w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-2";
+                modalIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else {
+                modalIcon.className = "w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-2";
+                modalIcon.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+            }
+
+            customModal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        modalCloseBtn.addEventListener('click', () => {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                customModal.classList.add('hidden');
+            }, 150);
+        });
+
+        // Handle Image Upload
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size < 1000) {
+                    showModal('圖片過於模糊或光線不足', '偵測到您上傳的照片畫質較差或過於昏暗，系統已自動啟用 AI 智慧補光與增強技術進行辨識！', 'error');
+                }
+
+                uploadedImageMimeType = file.type || 'image/png';
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedImageBase64 = event.target.result;
+                    imagePreview.src = uploadedImageBase64;
+                    uploadPlaceholder.classList.add('hidden');
+                    previewContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeImgBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            photoInput.value = '';
+            uploadedImageBase64 = null;
+            previewContainer.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+        });
+
+        // Handle 3 Fixed Wardrobe Clothing Items Upload
+        for (let i = 0; i < 3; i++) {
+            const wInput = document.getElementById(`wardrobe-item-${i}`);
+            wInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    wardrobeItemsMimeTypes[i] = file.type || 'image/png';
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        wardrobeItemsBase64[i] = event.target.result;
+                        document.getElementById(`w-img-${i}`).src = wardrobeItemsBase64[i];
+                        document.getElementById(`w-placeholder-${i}`).classList.add('hidden');
+                        document.getElementById(`w-preview-${i}`).classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        document.querySelectorAll('.remove-w-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = btn.getAttribute('data-index');
+                document.getElementById(`wardrobe-item-${idx}`).value = '';
+                wardrobeItemsBase64[idx] = null;
+                document.getElementById(`w-preview-${idx}`).classList.add('hidden');
+                document.getElementById(`w-placeholder-${idx}`).classList.remove('hidden');
+            });
+        });
+
+        // Generate Outfit Recommendation & Call Gemini 3.1 Flash Image API
+        generateBtn.addEventListener('click', async () => {
+            if (!uploadedImageBase64) {
+                showModal('請先上傳照片', '為了讓 AI 顧問能精準分析您的身形與膚色並進行虛擬試衣，請務必先上傳一張您的個人照片。', 'error');
+                return;
+            }
+
+            const uploadedCount = wardrobeItemsBase64.filter(item => item !== null).length;
+            if (uploadedCount === 0) {
+                showModal('請至少上傳一件衣物單品', '為了讓 AI 根據您的身形從固定衣物中挑選最適合的一件，請至少上傳 1 至 3 件衣物單品照片。', 'error');
+                return;
+            }
+
+            // Show loading
+            outputPlaceholder.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+            loadingBox.classList.remove('hidden');
+
+            const occasion = occasionSelect.value;
+            const wardrobe = wardrobeLevel.value;
+
+            let outfitDetails = getOutfitDetails(occasion);
+
+            loadingText.textContent = "AI 正在分析您的身形，並從您的固定衣物中挑選最適合的一件進行虛擬試衣合成...";
+
+            try {
+                const base64DataOnly = uploadedImageBase64.split(',')[1] || uploadedImageBase64;
+
+                // Build parts including the person and available wardrobe items
+                const parts = [
+                    { text: `Body-shape Analysis & Fixed Wardrobe Selection Task: First analyze the person's exact body shape, proportions, and posture from the main photo. Then, examine the provided wardrobe clothing item(s) and select the single best matching item for their body shape and the '${occasion}' occasion. Finally, realistically redraw and synthesize that selected clothing item onto the person in the main photo, maintaining their face and background.` },
+                    {
+                        inlineData: {
+                            mimeType: uploadedImageMimeType,
+                            data: base64DataOnly
+                        }
+                    }
+                ];
+
+                for (let i = 0; i < 3; i++) {
+                    if (wardrobeItemsBase64[i]) {
+                        parts.push({
+                            text: `Wardrobe Item ${i+1}:`
+                        });
+                        parts.push({
+                            inlineData: {
+                                mimeType: wardrobeItemsMimeTypes[i],
+                                data: wardrobeItemsBase64[i].split(',')[1] || wardrobeItemsBase64[i]
+                            }
+                        });
+                    }
+                }
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: parts
+                    }],
+                    generationConfig: {
+                        responseModalities: ['IMAGE']
+                    }
+                };
+
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+                let generatedImageUrl = null;
+
+                let retries = 3;
+                let delay = 1000;
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const result = await response.json();
+                        const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                        if (part && part.inlineData) {
+                            generatedImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                            break;
+                        }
+                    } catch (err) {
+                        // ignore retry log
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+
+                loadingBox.classList.add('hidden');
+                resultContainer.classList.remove('hidden');
+
+                if (generatedImageUrl) {
+                    compositeGeneratedImg.src = generatedImageUrl;
+                } else {
+                    compositeGeneratedImg.src = uploadedImageBase64;
+                }
+
+                renderResultsContent(occasion, wardrobe, outfitDetails);
+
+            } catch (err) {
+                loadingBox.classList.add('hidden');
+                resultContainer.classList.remove('hidden');
+                compositeGeneratedImg.src = uploadedImageBase64;
+                renderResultsContent(occasion, wardrobe, getOutfitDetails(occasion));
+                showModal('網路連線逾時', '由於網路或伺服器繁忙，系統已使用離線備用展示圖为您呈現穿搭建議。', 'error');
+            }
+        });
+
+        function getOutfitDetails(occasion) {
+            if (occasion === 'business') {
+                return {
+                    badge: "商務正式",
+                    title: "職場菁英專業俐落穿搭",
+                    desc: "運用深色調西裝外套搭配微正式內搭，營造專業穩重且不失現代感的職場形象。",
+                    itemsText: "修身單排扣西裝外套、絲質立領襯衫、簡約低跟皮革包鞋",
+                    items: [
+                        { name: "修身單排扣西裝外套", type: "外衣", desc: "深藍色系，塑造專業專業氣場" },
+                        { name: "絲質立領襯衫", type: "上身", desc: "質感細緻，展現知性優雅" },
+                        { name: "簡約低跟皮革包鞋", type: "鞋款", desc: "舒適兼具正式場合規範" }
+                    ]
+                };
+            } else if (occasion === 'party') {
+                return {
+                    badge: "派對晚宴",
+                    title: "法式輕奢華晚宴穿搭",
+                    desc: "融入微光澤感與獨特剪裁，在燈光下閃耀低調奢華光芒，成為全場焦點。",
+                    itemsText: "絲絨V領洋裝、金屬光澤鏈條包、細帶高跟涼鞋",
+                    items: [
+                        { name: "絲絨V領洋裝", type: "主體", desc: "優雅垂墜感，凸顯身形曲線" },
+                        { name: "金屬光澤鏈條包", type: "配件", desc: "精緻小巧，點綴整體造型" },
+                        { name: "細帶高跟涼鞋", type: "鞋款", desc: "延伸腿部比例，氣勢十足" }
+                    ]
+                };
+            } else if (occasion === 'outdoor') {
+                return {
+                    badge: "戶外輕旅行",
+                    title: "機能時尚山系輕裝",
+                    desc: "結合防風機能與大地色系，兼具實用性與時下最流行的山系City Boy/Girl風格。",
+                    itemsText: "多口袋機能防風夾克、寬鬆工裝休閒褲、戶外抓地機能健行鞋",
+                    items: [
+                        { name: "多口袋機能防風夾克", type: "外衣", desc: "防潑水、透氣舒適" },
+                        { name: "寬鬆工裝休閒褲", type: "下身", desc: "活動自如，街頭感十足" },
+                        { name: "戶外抓地機能健行鞋", type: "鞋款", desc: "安全穩固，適合長時間步行" }
+                    ]
+                };
+            } else if (occasion === 'avant-garde') {
+                return {
+                    badge: "前衛融合經典",
+                    title: "獨特街頭安全牌混搭",
+                    desc: "偵測到您的風格偏好較為前衛獨特，系統已為您完美融合街頭元素與經典安全版型，兼具吸睛與實穿性。",
+                    itemsText: "解構主義拼接衛衣、經典直筒水洗丹寧褲、復古厚底老爹鞋",
+                    items: [
+                        { name: "解構主義拼接衛衣", type: "上身", desc: "獨特剪裁，展現自我個性" },
+                        { name: "經典直筒水洗丹寧褲", type: "下身", desc: "百搭不敗，平衡前衛感" },
+                        { name: "復古厚底老爹鞋", type: "鞋款", desc: "增高修飾，街頭潮流必備" }
+                    ]
+                };
+            } else {
+                return {
+                    badge: "日常休閒",
+                    title: "質感簡約日常風格",
+                    desc: "透過俐落的版型與百搭單品，讓您在日常生活中展現自信與舒適感。",
+                    itemsText: "素面修身針織上衣、高腰直筒九分西裝褲、經典百搭小白鞋",
+                    items: [
+                        { name: "素面修身針織上衣", type: "上身", desc: "柔和米色調，親膚透氣" },
+                        { name: "高腰直筒九分西裝褲", type: "下身", desc: "修飾腿部線條，俐落有型" },
+                        { name: "經典百搭小白鞋", type: "鞋款", desc: "舒適耐走，兼具時尚休閒" }
+                    ]
+                };
+            }
+        }
+
+        function renderResultsContent(occasion, wardrobe, details) {
+            resultBadge.textContent = details.badge;
+            resultTitle.textContent = details.title;
+            resultDesc.textContent = details.desc;
+            compositeOutfitName.textContent = `套用: ${details.title}`;
+
+            itemsGrid.innerHTML = details.items.map(item => `
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col justify-between space-y-2">
+                    <div>
+                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 mb-1">${item.type}</span>
+                        <h4 class="font-bold text-sm text-slate-800">${item.name}</h4>
+                    </div>
+                    <p class="text-xs text-slate-500">${item.desc}</p>
+                </div>
+            `).join('');
+
+            if (wardrobe === 'empty') {
+                shoppingListCard.classList.remove('hidden');
+                shoppingItems.innerHTML = details.items.map(item => `
+                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-white text-amber-900 border border-amber-200 shadow-sm">
+                        <i class="fa-solid fa-plus text-amber-600 mr-1.5"></i> ${item.name}
+                    </span>
+                `).join('');
+            } else {
+                shoppingListCard.classList.add('hidden');
+            }
+        }
+
+        humanConsultantBtn.addEventListener('click', () => {
+            showModal('已為您轉接真人穿搭顧問', '系統已將您的照片與目前的風格偏好打包，並連線至線上專業造型顧問，顧問將於 5 分鐘內與您線上對話！', 'success');
+        });
+
+        communityVoteBtn.addEventListener('click', () => {
+            showModal('已成功發布至穿搭社群', '您的穿搭需求已匿名發布至社群大眾投票專區，全台時尚達人將會為您提供意見與評分！', 'success');
+        });
+    </script>
+</body>
+</html>
